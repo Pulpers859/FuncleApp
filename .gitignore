@@ -1,0 +1,26 @@
+# OS and editor clutter
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+
+# Local config and secrets
+.env
+.env.*
+!.env.example
+*.local.*
+firebase-config.local.js
+Secrets.*
+
+# Deploy/runtime caches
+.netlify/
+.vercel/
+coverage/
+dist/
+tmp/
+temp/
+
+# Logs and generated artifacts
+*.log
+*.zip

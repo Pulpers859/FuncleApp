@@ -1,0 +1,1081 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Funcleson Brew Works — Brew Day Builder</title>
+  <meta name="description" content="Funcleson Brew Works brew day cockpit with tabbed workflow, smart schedule urgency, editable timers, gravity tracking, packaging notes, and searchable archive." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="FuncleApp">
+  <meta name="theme-color" content="#17110f">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="compact-mode">
+  <a class="skip-to-content" href="#main-content">Skip to content</a>
+  <section class="auth-gate" id="authGate" aria-live="polite">
+    <div class="auth-card">
+      <div class="brand-badge" style="margin-bottom:14px"><span class="brand-dot"></span> FuncleApp</div>
+      <h1 id="authTitle">Loading FuncleApp…</h1>
+      <p id="authMessage">Checking sign-in and loading your brew data.</p>
+      <div class="auth-actions">
+        <button class="btn btn-primary" id="googleSignInBtn" type="button" style="display:none">Continue with Google</button>
+        <button class="btn btn-secondary" id="retryFirebaseBtn" type="button" style="display:none">Retry Firebase</button>
+        <button class="mini-btn" id="openLocalModeBtn" type="button">Open local-only mode</button>
+      </div>
+      <div class="auth-note" id="authNote"></div>
+    </div>
+  </section>
+  <header class="site-header" role="banner">
+    <div class="container nav-wrap">
+      <div class="header-top-row">
+        <div class="header-left">
+          <button class="mini-btn" id="brewElapsedBtn" type="button" title="Start or stop the brew day clock">Brew Clock</button>
+          <div id="brewElapsedDisplay" class="pill green" style="display:none;font-size:.78rem;cursor:pointer" title="Brew day elapsed time"></div>
+        </div>
+        <div class="header-right">
+          <div id="syncStatus" class="sync-pill compact-sync"><span class="sync-dot"></span><span id="syncStatusText">Local</span></div>
+        </div>
+      </div>
+      <div class="brand-lockup">
+        <div class="brand-name">Funcleson Brew Works Brew Day Builder</div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" role="main">
+    <section class="tabs-wrap">
+      <div class="container">
+        <div class="tabs" id="tabs" role="tablist" aria-label="Brew day sections">
+          <button class="tab-btn active" data-tab="dashboard" type="button" role="tab" aria-selected="true" title="Dashboard">Dash</button>
+          <button class="tab-btn" data-tab="recipes" type="button" role="tab" title="Recipe Builder">Recipes</button>
+          <button class="tab-btn" data-tab="brewday" type="button" role="tab" title="Brew Day">Brew</button>
+          <button class="tab-btn" data-tab="timers" type="button" role="tab" title="Timers + Additions">Timers</button>
+          <button class="tab-btn" data-tab="packaging" type="button" role="tab" title="Storage">Storage</button>
+          <button class="tab-btn" data-tab="archive" type="button" role="tab" title="Archive">Archive</button>
+          <button class="tab-btn" data-tab="math" type="button" role="tab" title="Calculators">Calcs</button>
+          <button class="tab-btn" data-tab="brewmate" type="button" role="tab" title="BrewMate">BrewMate</button>
+        </div>
+      </div>
+    </section>
+
+    <noscript>
+      <section style="padding:10px 0 0;">
+        <div class="container">
+          <div class="card" style="padding:14px; margin-top:10px;">
+            <strong style="display:block; color:var(--cream); margin-bottom:6px;">Static preview detected</strong>
+            <div class="small">If the tab buttons do not switch views, open this file directly in Safari or Chrome instead of the phone preview window.</div>
+          </div>
+        </div>
+      </section>
+    </noscript>
+
+<section class="tab-panel active" id="tab-dashboard">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>Clean brew-day overview</h2>
+          </div>
+          <p class="section-copy">Keep this page sparse. Show only the signals you actually want to glance at mid-brew.</p>
+        </div>
+
+        <div class="grid-2 brewmate-grid">
+          <div class="stack">
+            <div class="card priority-card" id="dashboard-card-next">
+              <div class="toolbar">
+                <h3>Next move</h3>
+                <span class="small">One clear action</span>
+              </div>
+              <div class="notes-box" id="dashboardNextMove"></div>
+              <div class="dashboard-quick-actions">
+                <button class="mini-btn" data-open-tab="timers" type="button">Timers</button>
+                <button class="mini-btn" data-open-tab="brewday" type="button">Batch</button>
+                <button class="mini-btn" data-open-tab="recipes" type="button">Recipes</button>
+              </div>
+            </div>
+
+            <div class="card" id="dashboard-card-stats">
+              <div class="toolbar">
+                <h3>Top stats</h3>
+                <span class="small">Short, high-value signals</span>
+              </div>
+              <div class="dashboard-top" id="dashboardStats"></div>
+            </div>
+
+            <div class="card" id="dashboard-card-batch">
+              <div class="toolbar">
+                <h3>Batch pulse</h3>
+                <span class="small">Only shows live batch info</span>
+              </div>
+              <div class="notes-box" id="dashboardBatchPulse"></div>
+            </div>
+
+            <div class="card" id="dashboard-card-urgent">
+              <div class="toolbar">
+                <h3>Attention now</h3>
+                <span class="small">Urgent additions and timer state</span>
+              </div>
+              <div class="notes-box" id="dashboardUrgent"></div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="card" id="dashboard-card-timers">
+              <div class="toolbar">
+                <h3>Running timers</h3>
+              </div>
+              <div class="active-timers-list" id="dashboardTimerList"></div>
+            </div>
+
+            <div class="card" id="dashboard-card-gravity">
+              <div class="toolbar">
+                <h3>Gravity</h3>
+              </div>
+              <div class="notes-box" id="dashboardGravitySummary"></div>
+            </div>
+
+            <div class="card" id="dashboard-card-finish">
+              <div class="toolbar">
+                <h3>Finish check</h3>
+              </div>
+              <div class="notes-box" id="dashboardArchiveSummary"></div>
+            </div>
+
+            <details class="card dashboard-options" id="dashboard-card-customize">
+              <summary>
+                <h3>Dashboard options</h3>
+                <span class="dashboard-options-chevron">⌄</span>
+              </summary>
+              <div class="dashboard-customize">
+                <div class="check-grid">
+                  <label class="check-pill"><input data-dash-widget="stats" type="checkbox" checked /> Top stats</label>
+                  <label class="check-pill"><input data-dash-widget="batch" type="checkbox" checked /> Batch pulse</label>
+                  <label class="check-pill"><input data-dash-widget="urgent" type="checkbox" checked /> Attention now</label>
+                  <label class="check-pill"><input data-dash-widget="timers" type="checkbox" checked /> Running timers</label>
+                  <label class="check-pill"><input data-dash-widget="gravity" type="checkbox" checked /> Gravity</label>
+                  <label class="check-pill"><input data-dash-widget="finish" type="checkbox" checked /> Finish check</label>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-brewday">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>Current batch, beer checklist, gravity, and notes</h2>
+          </div>
+          <p class="section-copy">Core batch details, beer-only checklist, gravity, and notes.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="stack brewmate-stack">
+            <div class="card brewmate-concept-card">
+              <div class="toolbar">
+                <h3>Loaded batch</h3>
+                <div class="tag-row">
+                  <button class="mini-btn" data-open-tab="recipes" type="button">Open Recipes</button>
+                  <button class="mini-btn" id="copyLoadedBatchBtn" type="button">Copy batch card</button>
+                </div>
+              </div>
+              <div class="batch-summary-card" id="currentBatchSummaryCard"></div>
+              <div style="height:12px"></div>
+              <div class="quick-action-grid" id="brewdayQuickActions"></div>
+              <input id="batchName" hidden />
+              <input id="batchStyle" hidden />
+              <select id="batchType" hidden><option>Beer</option><option>Mead</option><option>Cider</option><option>Wine</option><option>Hybrid</option></select>
+              <input id="batchVolume" hidden />
+              <input id="batchOG" hidden />
+              <input id="batchFG" hidden />
+              <input id="batchABV" hidden />
+              <textarea id="recipeIngredients" hidden></textarea>
+              <textarea id="recipeProcess" hidden></textarea>
+              <div style="height:12px"></div>
+              <div class="field">
+                <label for="batchNotes">Running batch notes</label>
+                <textarea id="batchNotes" placeholder="What actually happened today, what changed, problems, fixes, sensory notes..."></textarea>
+              </div>
+            </div>
+
+            <div class="card" id="brewdayBiabCard">
+              <div class="toolbar">
+                <h3>BIAB brew plan</h3>
+                <span class="small">Recipe defaults carried into live brew day</span>
+              </div>
+              <div id="brewdayBiabSnapshot" class="stack"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Beer Brew Day Checklist</h3>
+                <div class="tag-row">
+                  <button class="mini-btn" type="button" id="checkAllOff">Clear checks</button>
+                  <button class="mini-btn" type="button" id="loadBeerChecklist">Reload beer list</button>
+                </div>
+              </div>
+              <div class="checklist" id="checklist"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Water Chemistry</h3>
+                <span class="small">Salt additions and water adjustments</span>
+              </div>
+              <div class="form-grid-3">
+                <div class="field"><label for="waterGypsum">Gypsum (g)</label><input id="waterGypsum" type="text" inputmode="decimal" placeholder="5" /></div>
+                <div class="field"><label for="waterCaCl2">CaCl₂ (g)</label><input id="waterCaCl2" type="text" inputmode="decimal" placeholder="3" /></div>
+                <div class="field"><label for="waterEpsom">Epsom salt (g)</label><input id="waterEpsom" type="text" inputmode="decimal" placeholder="0" /></div>
+                <div class="field"><label for="waterLactic">Lactic acid (mL)</label><input id="waterLactic" type="text" inputmode="decimal" placeholder="2" /></div>
+                <div class="field"><label for="waterPhospho">Phosphoric acid (mL)</label><input id="waterPhospho" type="text" inputmode="decimal" placeholder="0" /></div>
+                <div class="field"><label for="waterMashpH">Mash pH (target)</label><input id="waterMashpH" type="text" inputmode="decimal" placeholder="5.3" /></div>
+              </div>
+              <div style="height:10px"></div>
+              <div class="field"><label for="waterNotes">Water notes</label><textarea id="waterNotes" placeholder="Source water profile, treatment rationale, actual mash pH reading..."></textarea></div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <div class="toolbar">
+                <h3>Gravity Log</h3>
+                <span class="small">Stage and trend aware</span>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="field"><label for="gravityDate">Date</label><input id="gravityDate" type="date" /></div>
+                <div class="field"><label for="gravityValue">Gravity</label><input id="gravityValue" type="text" inputmode="decimal" placeholder="1.042" /></div>
+                <div class="field">
+                  <label for="gravityStage">Stage</label>
+                  <select id="gravityStage">
+                    <option value="OG">OG</option>
+                    <option value="Pre-Boil">Pre-Boil</option>
+                    <option value="Post-Boil">Post-Boil</option>
+                    <option value="Fermentation" selected>Fermentation</option>
+                    <option value="FG">FG</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="form-grid">
+                <div class="field"><label for="gravityNote">Reading note</label><input id="gravityNote" placeholder="Warm sample, refractometer, day 4, stalled?"></div>
+                <div class="field"><label for="gravityTemp">Temp (°F)</label><input id="gravityTemp" type="number" step="1" placeholder="68" /></div>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="tag-row">
+                <button class="mini-btn" id="addGravityBtn" type="button">Add Reading</button>
+                <button class="mini-btn" id="clearGravityBtn" type="button">Clear Log</button>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <div class="gravity-mode-row">
+                <button class="filter-btn active" data-gravity-filter="all" type="button">All</button>
+                <button class="filter-btn" data-gravity-filter="brewday" type="button">Brew Day</button>
+                <button class="filter-btn" data-gravity-filter="fermentation" type="button">Fermentation</button>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <div class="grid-4" id="gravityInsights"></div>
+
+              <div style="height:12px"></div>
+
+              <div class="sparkline-shell">
+                <div class="helper-label">Gravity trend</div>
+                <svg id="gravitySparkline" viewBox="0 0 300 120" preserveAspectRatio="none" aria-label="Gravity trend chart"></svg>
+                <div class="sparkline-caption" id="gravityTrendCaption">Add more than one reading to see a trend line.</div>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <div class="log-list" id="gravityLog"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Brew Day Summary</h3>
+                <button class="mini-btn" id="copyNotesBtn" type="button">Copy notes</button>
+              </div>
+              <div class="notes-box" id="summaryBox">Update the batch or checklist to generate a quick brew-day summary here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-timers">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>Mash, boil, adjunct reminders, and schedule urgency</h2>
+          </div>
+          <p class="section-copy">Timers, additions, and the boil schedule in one cleaner work area.</p>
+        </div>
+
+        <div class="grid-2 brewmate-grid">
+          <div class="stack brewmate-stack">
+            <div class="card">
+              <div class="toolbar">
+                <h3>Timers</h3>
+                <span class="small">Editable presets and quick nudges</span>
+              </div>
+
+              <div class="timer-grid">
+                <div class="timer" id="mashTimerCard">
+                  <div class="timer-top">
+                    <div>
+                      <h4>Mash Timer</h4>
+                      <div class="timer-subline">Mash timing and step holds.</div>
+                    </div>
+                    <span class="pill" id="mashStatus">Ready</span>
+                  </div>
+                  <div class="clock" id="mashClock" role="timer" aria-label="Mash timer countdown">60:00</div>
+                  <div class="timer-config">
+                    <div class="field"><label for="mashDuration">Preset minutes</label><input id="mashDuration" type="number" min="1" step="1" /></div>
+                    <button class="mini-btn" data-timer-apply="mash" type="button">Apply</button>
+                  </div>
+                  <div class="timer-actions">
+                    <button class="mini-btn" data-timer="mash" data-action="start" type="button">Start</button>
+                    <button class="mini-btn" data-timer="mash" data-action="pause" type="button">Pause</button>
+                    <button class="mini-btn" data-timer="mash" data-action="reset" type="button">Reset</button>
+                  </div>
+                  <div class="timer-quick">
+                    <button class="mini-btn" data-timer-adjust="mash" data-seconds="60" type="button">+1 min</button>
+                    <button class="mini-btn" data-timer-adjust="mash" data-seconds="300" type="button">+5 min</button>
+                    <button class="mini-btn" data-timer-adjust="mash" data-seconds="-60" type="button">-1 min</button>
+                  </div>
+                </div>
+
+                <div class="timer" id="boilTimerCard">
+                  <div class="timer-top">
+                    <div>
+                      <h4>Boil Timer</h4>
+                      <div class="timer-subline">Drives the schedule below.</div>
+                    </div>
+                    <span class="pill" id="boilStatus">Ready</span>
+                  </div>
+                  <div class="clock" id="boilClock" role="timer" aria-label="Boil timer countdown">60:00</div>
+                  <div class="timer-config">
+                    <div class="field"><label for="boilDuration">Preset minutes</label><input id="boilDuration" type="number" min="1" step="1" /></div>
+                    <button class="mini-btn" data-timer-apply="boil" type="button">Apply</button>
+                  </div>
+                  <div class="timer-actions">
+                    <button class="mini-btn" data-timer="boil" data-action="start" type="button">Start</button>
+                    <button class="mini-btn" data-timer="boil" data-action="pause" type="button">Pause</button>
+                    <button class="mini-btn" data-timer="boil" data-action="reset" type="button">Reset</button>
+                  </div>
+                  <div class="timer-quick">
+                    <button class="mini-btn" data-timer-adjust="boil" data-seconds="60" type="button">+1 min</button>
+                    <button class="mini-btn" data-timer-adjust="boil" data-seconds="300" type="button">+5 min</button>
+                    <button class="mini-btn" data-timer-adjust="boil" data-seconds="-60" type="button">-1 min</button>
+                  </div>
+                </div>
+
+                <div class="timer" id="adjunctTimerCard">
+                  <div class="timer-top">
+                    <div>
+                      <h4>Adjunct Reminder</h4>
+                      <div class="timer-subline">Useful for adjuncts and one-off reminders.</div>
+                    </div>
+                    <span class="pill" id="adjunctStatus">Ready</span>
+                  </div>
+                  <div class="clock" id="adjunctClock" role="timer" aria-label="Adjunct timer countdown">15:00</div>
+                  <div class="timer-config">
+                    <div class="field"><label for="adjunctDuration">Preset minutes</label><input id="adjunctDuration" type="number" min="1" step="1" /></div>
+                    <button class="mini-btn" data-timer-apply="adjunct" type="button">Apply</button>
+                  </div>
+                  <div class="timer-actions">
+                    <button class="mini-btn" data-timer="adjunct" data-action="start" type="button">Start</button>
+                    <button class="mini-btn" data-timer="adjunct" data-action="pause" type="button">Pause</button>
+                    <button class="mini-btn" data-timer="adjunct" data-action="reset" type="button">Reset</button>
+                  </div>
+                  <div class="timer-quick">
+                    <button class="mini-btn" data-timer-adjust="adjunct" data-seconds="60" type="button">+1 min</button>
+                    <button class="mini-btn" data-timer-adjust="adjunct" data-seconds="300" type="button">+5 min</button>
+                    <button class="mini-btn" data-timer-adjust="adjunct" data-seconds="-60" type="button">-1 min</button>
+                  </div>
+                </div>
+
+                <div class="timer" id="customTimerCard">
+                  <div class="timer-top">
+                    <div>
+                      <h4>Custom Timer</h4>
+                      <div class="timer-subline">For the extra thing the recipe forgot.</div>
+                    </div>
+                    <span class="pill" id="customStatus">Ready</span>
+                  </div>
+                  <div class="clock" id="customClock" role="timer" aria-label="Custom timer countdown">10:00</div>
+                  <div class="timer-config">
+                    <div class="field"><label for="customDuration">Preset minutes</label><input id="customDuration" type="number" min="1" step="1" /></div>
+                    <button class="mini-btn" data-timer-apply="custom" type="button">Apply</button>
+                  </div>
+                  <div class="timer-actions">
+                    <button class="mini-btn" data-timer="custom" data-action="start" type="button">Start</button>
+                    <button class="mini-btn" data-timer="custom" data-action="pause" type="button">Pause</button>
+                    <button class="mini-btn" data-timer="custom" data-action="reset" type="button">Reset</button>
+                  </div>
+                  <div class="timer-quick">
+                    <button class="mini-btn" data-timer-adjust="custom" data-seconds="60" type="button">+1 min</button>
+                    <button class="mini-btn" data-timer-adjust="custom" data-seconds="300" type="button">+5 min</button>
+                    <button class="mini-btn" data-timer-adjust="custom" data-seconds="-60" type="button">-1 min</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Boil / Addition Schedule</h3>
+                <div class="tag-row">
+                  <button class="mini-btn" id="useCurrentBoilBtn" type="button">Use Current Boil Time</button>
+                  <label class="switch"><input id="scheduleSyncToggle" type="checkbox" checked /> Sync to boil timer</label>
+                </div>
+              </div>
+
+              <div class="form-grid-3">
+                <div class="field"><label for="scheduleTime">Minutes left</label><input id="scheduleTime" type="number" step="1" placeholder="15" /></div>
+                <div class="field"><label for="scheduleItem">Addition</label><input id="scheduleItem" placeholder="Lactose / whirlpool hops / fruit prep" /></div>
+                <div class="field"><label for="scheduleNote">Note</label><input id="scheduleNote" placeholder="What matters here?" /></div>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="tag-row">
+                <button class="mini-btn" id="addScheduleBtn" type="button">Add Schedule Item</button>
+                <button class="mini-btn" id="loadDemoScheduleBtn" type="button">Load Demo</button>
+                <button class="mini-btn" id="clearScheduleBtn" type="button">Clear Schedule</button>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <div class="summary-ribbon" id="scheduleRibbon"></div>
+
+              <div class="notes-box" id="scheduleQueueSummary">No boil schedule items yet.</div>
+
+              <div class="schedule-list" id="scheduleList"></div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <div class="toolbar">
+                <h3>Active Timer Dock</h3>
+              </div>
+              <div class="active-timers-list" id="activeTimersList"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Live Boil Snapshot</h3>
+              </div>
+              <div class="notes-box" id="boilSnapshot">Start the boil timer or add schedule items to get a live snapshot here.</div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Current Bench Snapshot</h3>
+              </div>
+              <div class="notes-box" id="miniBatchSummary"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+<section class="tab-panel" id="tab-recipes">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>Build the recipe once, then brew from it fast</h2>
+          </div>
+          <p class="section-copy">Recipe planning stays here. Saved recipes and finished batches live in Archive.</p>
+        </div>
+
+
+        <div class="card">
+          <div class="recipe-editor-head">
+            <div>
+              <h3 id="recipeEditorTitle">Build a recipe</h3>
+              <div class="small">ABV auto-fills from OG and FG. Grain percentages update automatically.</div>
+            </div>
+            <div class="tag-row">
+              <button class="btn btn-primary" id="saveTemplateBtn" type="button">Save recipe</button>
+              <button class="mini-btn" id="cancelRecipeEditBtn" type="button" hidden>Cancel edit</button>
+            </div>
+          </div>
+          <div style="height:12px"></div>
+
+          <div class="recipe-builder-shell">
+            <div class="builder-core-grid">
+              <div class="recipe-form-section">
+                <h4 class="recipe-form-title">Core batch targets</h4>
+                <p class="recipe-form-copy">Set the target numbers, then build the ingredient sections.</p>
+                <div class="form-grid">
+                  <div class="field"><label for="templateName">Recipe name</label><input id="templateName" placeholder="Orange Creamsicle Wheat" /></div>
+                  <div class="field"><label for="templateStyle">Style</label><input id="templateStyle" placeholder="Fruited Wheat Ale" /></div>
+                  <div class="field"><label for="templateType">Type</label><select id="templateType"><option>Beer</option><option>Mead</option><option>Cider</option><option>Wine</option><option>Hybrid</option></select></div>
+                  <div class="field"><label for="templateVolume">Target size (gal)</label><input id="templateVolume" type="number" step="0.1" /></div>
+                </div>
+                <div class="form-grid-3">
+                  <div class="field"><label for="templateOG">Target OG</label><input id="templateOG" type="text" inputmode="decimal" placeholder="1.065" /></div>
+                  <div class="field"><label for="templateFG">Target FG</label><input id="templateFG" type="text" inputmode="decimal" placeholder="1.012" /></div>
+                  <div class="field"><label for="templateABV">Est. ABV</label><input id="templateABV" type="text" inputmode="decimal" placeholder="Auto" readonly /></div>
+                </div>
+              </div>
+
+              <div class="recipe-form-section mash-panel">
+                <h4 class="recipe-form-title">BIAB water planner</h4>
+                <p class="recipe-form-copy">This uses the recipe target size and current grain bill, so your BIAB water volume and strike temp live right where you build the beer.</p>
+                <div class="biab-summary-grid">
+                  <div class="recipe-highlight" id="recipeBiabTargetSummary">Set target size and fermentables to plan your BIAB water.</div>
+                  <div class="recipe-highlight" id="recipeBiabQuickSummary">Strike ratio and mash volume will show here.</div>
+                </div>
+                <div class="recipe-mash-grid compact-four">
+                  <div class="field"><label for="templateMashTemp">Target mash temp (°F)</label><input id="templateMashTemp" type="number" step="1" placeholder="152" /></div>
+                  <div class="field"><label for="templateMashTime">Mash time (min)</label><input id="templateMashTime" type="number" step="1" placeholder="60" /></div>
+                  <div class="field"><label for="templateBiabBoilTime">Boil time (min)</label><input id="templateBiabBoilTime" type="number" step="1" placeholder="60" /></div>
+                  <div class="field"><label for="templateBiabBoilOff">Boiloff rate (gal/hr)</label><input id="templateBiabBoilOff" type="number" step="0.1" placeholder="1.0" /></div>
+                  <div class="field"><label for="templateBiabTrub">Kettle trub loss (gal)</label><input id="templateBiabTrub" type="number" step="0.1" placeholder="0.5" /></div>
+                  <div class="field"><label for="templateBiabAbsorption">Grain absorption (gal/lb)</label><input id="templateBiabAbsorption" type="number" step="0.001" placeholder="0.125" /></div>
+                  <div class="field"><label for="templateBiabGrainTemp">Grain temp (°F)</label><input id="templateBiabGrainTemp" type="number" step="1" placeholder="68" /></div>
+                </div>
+                <div class="result" id="recipeBiabResult">Add target size and fermentables to see total BIAB water, pre-boil volume, and strike temp.</div>
+                <div class="field"><label for="templateMashNotes">BIAB notes</label><textarea id="templateMashNotes" placeholder="Bag squeeze plan, mash-out decision, squeeze notes, top-up plan, or anything future-you will want on brew day."></textarea></div>
+              </div>
+            </div>
+
+            <div class="recipe-form-section fermentables-panel">
+              <div class="toolbar">
+                <div>
+                  <h4 class="recipe-form-title">Fermentables</h4>
+                  <p class="recipe-form-copy">One clean grain bill with live percentages.</p>
+                </div>
+                <button class="mini-btn" id="addFermentableBtn" type="button">Add fermentable</button>
+              </div>
+              <div class="recipe-row-list" id="fermentablesRows"></div>
+              <div class="recipe-total-bar">
+                <span>Total grain bill: <strong id="grainBillTotalDisplay">0.00 lb</strong></span>
+              </div>
+              <div class="recipe-total-bar" id="recipeEstimatesDisplay" style="margin-top:8px">
+                Add OG, volume, hops with times, and fermentables with °L to see IBU and SRM estimates.
+              </div>
+            </div>
+
+            <div class="recipe-form-section">
+              <div class="toolbar">
+                <div>
+                  <h4 class="recipe-form-title">Hops</h4>
+                  <p class="recipe-form-copy">Compact hop schedule defaults.</p>
+                </div>
+                <button class="mini-btn" id="addHopBtn" type="button">Add hop</button>
+              </div>
+              <div class="recipe-row-list" id="hopsRows"></div>
+            </div>
+
+            <div class="builder-support-grid">
+              <div class="recipe-form-section">
+                <div class="toolbar">
+                  <div>
+                    <h4 class="recipe-form-title">Yeast</h4>
+                    <p class="recipe-form-copy">Packets, starter, slurry, or grams.</p>
+                  </div>
+                  <button class="mini-btn" id="addYeastBtn" type="button">Add yeast</button>
+                </div>
+                <div class="recipe-row-list" id="yeastRows"></div>
+              </div>
+
+              <div class="recipe-form-section">
+                <div class="toolbar">
+                  <div>
+                    <h4 class="recipe-form-title">Other ingredients</h4>
+                    <p class="recipe-form-copy">Fruit, lactose, spices, cacao, coffee, nutrients, salts, and other additions.</p>
+                  </div>
+                  <button class="mini-btn" id="addOtherBtn" type="button">Add ingredient</button>
+                </div>
+                <div class="recipe-row-list" id="otherIngredientRows"></div>
+              </div>
+            </div>
+
+            <div class="recipe-form-section">
+              <div class="toolbar">
+                <div>
+                  <h4 class="recipe-form-title">Brew-day defaults</h4>
+                  <p class="recipe-form-copy">Save schedule, timer, and packaging defaults with the recipe.</p>
+                </div>
+              </div>
+              <div class="recipe-default-grid">
+                <div class="default-box">
+                  <h5>Schedule defaults</h5>
+                  <div class="small" id="recipeScheduleDefaultsSummary">No schedule captured yet.</div>
+                  <div style="height:10px"></div>
+                  <div class="tag-row">
+                    <button class="mini-btn" id="captureScheduleDefaultsBtn" type="button">Capture current schedule</button>
+                    <button class="mini-btn" id="clearScheduleDefaultsBtn" type="button">Clear</button>
+                  </div>
+                </div>
+                <div class="default-box">
+                  <h5>Timer defaults</h5>
+                  <div class="small" id="recipeTimerDefaultsSummary">No timer defaults captured yet.</div>
+                  <div style="height:10px"></div>
+                  <div class="tag-row">
+                    <button class="mini-btn" id="captureTimerDefaultsBtn" type="button">Capture current timers</button>
+                    <button class="mini-btn" id="resetTimerDefaultsBtn" type="button">Reset</button>
+                  </div>
+                </div>
+                <div class="default-box">
+                  <h5>Packaging defaults</h5>
+                  <div class="small" id="recipePackagingDefaultsSummary">No packaging defaults captured yet.</div>
+                  <div style="height:10px"></div>
+                  <div class="tag-row">
+                    <button class="mini-btn" id="capturePackagingDefaultsBtn" type="button">Capture current packaging</button>
+                    <button class="mini-btn" id="clearPackagingDefaultsBtn" type="button">Clear</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="builder-support-grid">
+              <div class="recipe-form-section">
+                <h4 class="recipe-form-title">Process</h4>
+                <div class="field"><label for="templateProcess">Recipe / process notes</label><textarea id="templateProcess" placeholder="Mash plan, boil length, fermentation path, fruit timing, conditioning plan, and things future-you must remember."></textarea></div>
+              </div>
+              <div class="recipe-form-section">
+                <h4 class="recipe-form-title">Tags + quick notes</h4>
+                <div class="field"><label for="templateTags">Tags</label><input id="templateTags" placeholder="blueberry, cream, summer, stout, citrus" /></div>
+                <div class="field"><label for="templateQuick">Quick note</label><textarea id="templateQuick" placeholder="The 1-line reminder you want when deciding whether to brew this again."></textarea></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-archive">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>Saved recipes and finished batches</h2>
+          </div>
+          <p class="section-copy">This keeps your old recipes, variants, and archived brew history out of the builder so the planning screen stays clean.</p>
+        </div>
+
+        <div class="archive-shell-grid">
+          <div class="stack recipe-catalog-shell">
+            <details open>
+              <summary class="card">
+                <div class="toolbar"><h3>Saved recipes</h3><span class="small">Expandable catalog that stays compact when empty</span></div>
+                <div class="recipe-quick-stats">
+                  <div class="recipe-stat"><div class="recipe-stat-value" id="recipeCountStat">0</div><div class="recipe-stat-copy">Saved recipes</div></div>
+                  <div class="recipe-stat"><div class="recipe-stat-value" id="recipeSelectedName">—</div><div class="recipe-stat-copy" id="recipeSelectedMeta">Pick one to inspect or brew from</div></div>
+                  <div class="recipe-stat"><div class="recipe-stat-value">Launch</div><div class="recipe-stat-copy" id="recipeUtilityNote">Load a recipe into the current batch or open it for editing.</div></div>
+                </div>
+              </summary>
+              <div class="card" style="margin-top:12px;">
+                <div class="recipe-catalog-tools">
+                  <div class="field recipe-search"><label for="recipeSearch">Search recipes</label><input id="recipeSearch" placeholder="Blueberry, stout, cream, Citra, lactose..." /></div>
+                  <div class="field"><label for="recipeTypeFilter">Type</label><select id="recipeTypeFilter"><option value="all">All</option><option>Beer</option><option>Mead</option><option>Cider</option><option>Wine</option><option>Hybrid</option></select></div>
+                  <div class="field"><label for="recipeSort">Sort</label><select id="recipeSort"><option value="recent">Newest first</option><option value="name">Name A–Z</option><option value="abv">Highest ABV</option><option value="style">Style A–Z</option></select></div>
+                </div>
+                <div class="recipe-list recipe-catalog" id="recipeList"></div>
+              </div>
+            </details>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <div class="toolbar"><h3>Selected recipe</h3><span class="small">Inspect, launch, duplicate, or edit</span></div>
+              <div id="recipeDetail" class="recipe-detail-grid">No recipe selected yet.</div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Archived batches</h3>
+                <div class="archive-tools">
+                  <input class="archive-search" id="archiveSearch" placeholder="Search name, style, tags, ingredients, notes..." />
+                  <button class="mini-btn" id="clearArchiveBtn" type="button">Clear archive</button>
+                </div>
+              </div>
+              <div class="archive-grid" id="archiveGrid"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Compare batches</h3>
+                <span class="small">Select two archived batches to see differences side-by-side</span>
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="compareA">Batch A</label>
+                  <select id="compareA"><option value="">Pick a batch…</option></select>
+                </div>
+                <div class="field">
+                  <label for="compareB">Batch B</label>
+                  <select id="compareB"><option value="">Pick a batch…</option></select>
+                </div>
+              </div>
+              <div style="height:12px"></div>
+              <div id="compareResult" class="notes-box">Select two batches above to compare them.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-packaging">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>Storage / packaging and archive prep</h2>
+          </div>
+          <p class="section-copy">Finish cleanly, rate the batch, and leave useful notes for next time.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="toolbar">
+              <h3>Packaging Checklist</h3>
+              <div class="tag-row">
+                <button class="mini-btn" id="loadBottleChecklist" type="button">Bottling</button>
+                <button class="mini-btn" id="loadKegChecklist" type="button">Kegging</button>
+                <button class="mini-btn" id="clearPackagingChecks" type="button">Clear checks</button>
+              </div>
+            </div>
+            <div class="checklist" id="packagingChecklist"></div>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <div class="toolbar">
+                <h3>Notes + rating</h3>
+                <button class="mini-btn" id="copyPackagingBtn" type="button">Copy packaging notes</button>
+              </div>
+
+              <div class="field">
+                <label for="packagingNotes">Packaging notes</label>
+                <textarea id="packagingNotes" placeholder="Final gravity confirmed, priming plan, keg pressure plan, oxygen concerns, packaging surprises..."></textarea>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <div class="field">
+                <label for="tastingNotes">First tasting notes</label>
+                <textarea id="tastingNotes" placeholder="Blueberry good, maple too soft, roast right where it should be, carb needs another week..."></textarea>
+              </div>
+
+              <div style="height:12px"></div>
+
+              <div class="form-grid-3">
+                <div class="field">
+                  <label for="batchRating">Batch rating</label>
+                  <select id="batchRating">
+                    <option value="">Not rated yet</option>
+                    <option value="1">1 / 5</option>
+                    <option value="2">2 / 5</option>
+                    <option value="3">3 / 5</option>
+                    <option value="4">4 / 5</option>
+                    <option value="5">5 / 5</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="batchTags">Archive tags</label>
+                  <input id="batchTags" placeholder="pastry stout, blueberry, maple" />
+                </div>
+                <div class="field">
+                  <label class="switch" style="margin-top:26px"><input id="wouldBrewAgain" type="checkbox" /> Would brew again</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Archive this batch</h3>
+                <span class="small">Save the useful post-brew context, not just the numbers</span>
+              </div>
+              <div class="tag-row">
+                <button class="btn btn-primary" id="archiveBatchBtn" type="button">Archive Current Batch</button>
+                <button class="mini-btn" id="jumpToArchiveBtn" type="button">Open Archive</button>
+              </div>
+              <div style="height:12px"></div>
+              <div class="status-stack">
+                <div class="notes-box" id="packagingReadinessBox">Archive readiness will show here.</div>
+                <div class="notes-box" id="archivePrepSummary">When you archive, the batch fields plus packaging notes, tasting notes, rating, tags, and "would brew again" status will travel with it.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-math">
+      <div class="container">
+        <div class="section-head">
+          <div>
+<h2>The brew-day calculations you actually use</h2>
+          </div>
+          <p class="section-copy">Still intentionally tight. These are the calculators you actually reach for during a brew day or storage session, without pretending to be a full brewing suite.</p>
+        </div>
+
+        <div class="calc-grid">
+          <div class="card calc-card">
+            <h4>ABV from OG / FG</h4>
+            <div class="field"><label for="calcOg">OG</label><input id="calcOg" type="number" step="0.001" placeholder="1.070" /></div>
+            <div class="field"><label for="calcFg">FG</label><input id="calcFg" type="number" step="0.001" placeholder="1.016" /></div>
+            <div class="result" id="abvResult">Enter OG and FG</div>
+          </div>
+
+          <div class="card calc-card">
+            <h4>Priming sugar</h4>
+            <div class="field"><label for="primeVol">Beer volume (gal)</label><input id="primeVol" type="number" step="0.1" placeholder="5" /></div>
+            <div class="field"><label for="primeTemp">Beer temp (°F)</label><input id="primeTemp" type="number" step="1" placeholder="68" /></div>
+            <div class="field"><label for="primeCo2">Target CO₂ volumes</label><input id="primeCo2" type="number" step="0.1" placeholder="2.4" /></div>
+            <div class="result" id="primeResult">Enter values</div>
+          </div>
+
+          <div class="card calc-card">
+            <h4>Bottle count helper</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div class="field"><label for="bottleBatchGallons">Beer (gal)</label><input id="bottleBatchGallons" type="number" step="0.1" placeholder="5" /></div>
+              <div class="field"><label for="bottleSizeOz">Bottle (oz)</label><input id="bottleSizeOz" type="number" step="1" placeholder="12" /></div>
+              <div class="field"><label for="bottleLossPct">Loss %</label><input id="bottleLossPct" type="number" step="1" placeholder="5" /></div>
+            </div>
+            <div class="result" id="bottleCountResult" style="margin-top:8px">Enter packaged volume and bottle size.</div>
+          </div>
+
+          <div class="card calc-card">
+            <h4>Keg quick helper</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div class="field"><label for="kegTemp">Temp (°F)</label><input id="kegTemp" type="number" step="1" placeholder="38" /></div>
+              <div class="field"><label for="kegVolumes">CO₂ vols</label><input id="kegVolumes" type="number" step="0.1" placeholder="2.4" /></div>
+              <div class="field"><label for="kegSizeGallons">Keg (gal)</label><input id="kegSizeGallons" type="number" step="0.1" placeholder="5" /></div>
+            </div>
+            <div class="result" id="kegPressureResult" style="margin-top:8px">Enter temp and target carbonation.</div>
+          </div>
+
+          <div class="card calc-card">
+            <h4>Yeast Starter</h4>
+            <div class="small" style="margin-bottom:10px">Simple pitching rate for liquid yeast. Dry yeast usually doesn't need a starter.</div>
+            <div class="field"><label for="starterOG">Wort OG</label><input id="starterOG" type="number" step="0.001" placeholder="1.065" /></div>
+            <div class="field"><label for="starterVol">Batch volume (gal)</label><input id="starterVol" type="number" step="0.1" placeholder="5" /></div>
+            <div class="field">
+              <label for="starterType">Yeast type</label>
+              <select id="starterType">
+                <option value="ale">Ale (0.75 M cells/mL/°P)</option>
+                <option value="lager">Lager (1.5 M cells/mL/°P)</option>
+              </select>
+            </div>
+            <div class="field"><label for="starterPacks">Packs / vials (100B cells each)</label><input id="starterPacks" type="number" step="1" placeholder="1" /></div>
+            <div class="result" id="starterResult">Enter OG and volume to see pitching needs.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="tab-panel" id="tab-brewmate">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>BrewMate — creative brewing mentor</h2>
+          </div>
+          <p class="section-copy">This is where you sketch the beer, learn what ingredients actually support the idea, catch clashes early, and then push a starter draft into Recipes.</p>
+        </div>
+
+        <div class="grid-2 brewmate-grid">
+          <div class="stack brewmate-stack">
+            <div class="card">
+              <div class="toolbar">
+                <h3>Concept lab</h3>
+                <div class="tag-row">
+                  <button class="mini-btn" id="brewMateLoadRecipeBtn" type="button">Pull selected recipe</button>
+                  <button class="mini-btn" id="brewMateLoadBatchBtn" type="button">Pull live batch</button>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="field"><label for="brewMateConceptName">Beer idea name</label><input id="brewMateConceptName" placeholder="Midnight Orange Velvet" /></div>
+                <div class="field"><label for="brewMateStyle">Style / anchor beer</label><input id="brewMateStyle" placeholder="Pastry stout, West Coast IPA, Czech pils..." /></div>
+                <div class="field"><label for="brewMateInspiration">Inspiration / vibe</label><input id="brewMateInspiration" placeholder="Creamsicle, tiramisu, bright farmhouse citrus, old-school pils snap..." /></div>
+                <div class="field"><label for="brewMateVision">Drinking experience</label><input id="brewMateVision" placeholder="Rich but not sticky, bright and crisp, layered roast with clean finish..." /></div>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="form-grid">
+                <div class="field"><label for="brewMateBatchSize">Batch size (gal)</label><input id="brewMateBatchSize" type="number" step="0.1" placeholder="5" /></div>
+                <div class="field"><label for="brewMateAbv">Target ABV %</label><input id="brewMateAbv" type="number" step="0.1" placeholder="6.5" /></div>
+                <div class="field"><label for="brewMateIbu">Target IBU</label><input id="brewMateIbu" type="number" step="1" placeholder="35" /></div>
+                <div class="field">
+                  <label for="brewMateBitterness">Bitterness frame</label>
+                  <select id="brewMateBitterness">
+                    <option value="soft">Soft / background</option>
+                    <option value="balanced" selected>Balanced / structural</option>
+                    <option value="firm">Firm / corrective</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="brewMateBody">Body</label>
+                  <select id="brewMateBody">
+                    <option value="light">Light</option>
+                    <option value="medium-light">Medium-light</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="medium-full">Medium-full</option>
+                    <option value="full">Full</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="brewMateFinish">Finish</label>
+                  <select id="brewMateFinish">
+                    <option value="dry">Dry</option>
+                    <option value="balanced" selected>Balanced</option>
+                    <option value="soft">Soft</option>
+                    <option value="sweet">Sweet</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="brewMateYeast">Yeast expression</label>
+                  <select id="brewMateYeast">
+                    <option value="clean" selected>Clean / neutral</option>
+                    <option value="english">English / estery</option>
+                    <option value="belgian">Belgian / expressive</option>
+                    <option value="lager">Lager / crisp</option>
+                    <option value="hefe">Wheat / phenolic-fruity</option>
+                    <option value="kveik">Kveik / fast citrusy</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="brewMateTargetDrinkability">Drinkability target</label>
+                  <select id="brewMateTargetDrinkability">
+                    <option value="crushable">Crushable</option>
+                    <option value="balanced" selected>Balanced</option>
+                    <option value="sipping">Slow sipper</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="brewMateExperimental">Experimental level</label>
+                  <select id="brewMateExperimental">
+                    <option value="classic">Classic / grounded</option>
+                    <option value="modern" selected>Modern but disciplined</option>
+                    <option value="wild">Push the weird stuff</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="brewMateLessonFocus">Learning focus</label>
+                  <select id="brewMateLessonFocus">
+                    <option value="balance" selected>Balance / profile building</option>
+                    <option value="grist">Grain bill structure</option>
+                    <option value="hops">Hop strategy</option>
+                    <option value="yeast">Yeast and fermentation</option>
+                    <option value="adjuncts">Adjunct timing and restraint</option>
+                    <option value="process">Process and execution</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="field"><label for="brewMateMustHave">Must-have flavors</label><textarea id="brewMateMustHave" placeholder="Orange, vanilla cream, milk chocolate, gentle coffee, jammy blueberry, bright lemon, noble spice..."></textarea></div>
+              <div class="field"><label for="brewMateAvoid">Avoid / keep out</label><textarea id="brewMateAvoid" placeholder="No ash, no hot alcohol, no syrupy finish, no muddled spice, no oniony hops..."></textarea></div>
+              <div class="field"><label for="brewMateAdjuncts">Adjuncts / signature ingredients</label><textarea id="brewMateAdjuncts" placeholder="Vanilla, cacao nibs, coffee, fruit, lactose, honey, spices, oak..."></textarea></div>
+              <div class="field"><label for="brewMateConstraints">Constraints / concerns</label><textarea id="brewMateConstraints" placeholder="BIAB only, no temp control, no closed transfer, using US-05, avoid lactose, keep costs sane..."></textarea></div>
+
+              <div style="height:10px"></div>
+
+              <div class="tag-row">
+                <button class="btn btn-primary" id="brewMateSeedRecipeBtn" type="button">Send starter draft to Recipes</button>
+                <button class="btn btn-secondary" id="copyBrewMatePromptBtn" type="button">Copy deep-dive prompt</button>
+                <button class="mini-btn" id="brewMateClearBtn" type="button">Clear inputs</button>
+                <button class="mini-btn" id="openBrewMateChatgptBtn" type="button">Open ChatGPT</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Concept north star</h3>
+              </div>
+              <div class="notes-box" id="brewMateConceptSummary">Describe the beer you want to drink and BrewMate will turn it into a more disciplined design target.</div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Conflict check</h3>
+              </div>
+              <div class="notes-box info-rows" id="brewMateConflicts"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Why this works</h3>
+              </div>
+              <div class="notes-box" id="brewMateLesson"></div>
+            </div>
+          </div>
+
+          <div class="stack brewmate-stack brewmate-output-stack">
+            <div class="card">
+              <div class="toolbar">
+                <h3>Pairings that support this beer</h3>
+              </div>
+              <div class="notes-box info-rows" id="brewMatePairings"></div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h3>Ingredient coach</h3>
+              </div>
+              <div class="notes-box info-rows" id="brewMateIngredientCoach"></div>
+            </div>
+
+            <div class="card brewmate-architecture-card">
+              <div class="toolbar">
+                <h3>Recipe architecture</h3>
+              </div>
+              <div class="notes-box info-rows" id="brewMateArchitecture"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+
+  <div class="sticky-timer-bar" id="stickyTimerBar">
+    <div class="sticky-timer-inner">
+      <div id="stickyTimerContent">No active timers.</div>
+      <button class="mini-btn" data-open-tab="timers" type="button">Open Timers</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-shell">
+      <div class="footer-actions">
+        <button class="mini-btn" id="signOutBtn" type="button" hidden>Sign Out</button>
+        <button class="mini-btn" id="exportDataBtn" type="button">Export</button>
+        <button class="mini-btn" id="importDataBtn" type="button">Import</button>
+        <input type="file" id="importFileInput" accept=".json" hidden />
+      </div>
+    </div>
+  </footer>
+
+    <script src="brew-logic.js" defer></script>
+    <script src="app.js" defer></script>
+</body>
+</html>

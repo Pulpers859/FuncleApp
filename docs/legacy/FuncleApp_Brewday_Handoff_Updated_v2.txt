@@ -1,0 +1,521 @@
+You are taking over a web app project called **FuncleApp Brewday Assistant** for **Funcleson Brew Works**.
+
+Your job is to continue from the current working state without restarting from scratch.
+
+## Current source of truth
+
+The project is **no longer authored as a single giant HTML file**.
+The current working app has been split into a small static site structure for easier maintenance.
+
+Current deploy structure:
+- `index.html`
+- `styles.css`
+- `app.js`
+- `brew-logic.js`
+- icon PNG files at the site root (`icon-180.png`, `icon-192.png`, `icon-512.png`)
+
+The latest known-good bundle in this workspace is the **BrewMate width-fix build**:
+- `funcleson_feature_pass7b_brewmate_widthfix.zip`
+
+Treat that build as the current baseline unless the user provides a newer file.
+
+## Project purpose
+
+This is a **static HTML/CSS/JS brew-day web app** for real use during homebrew sessions.
+It is not a generic brewery website.
+It should feel like a warm, polished, mobile-friendly brew-day cockpit with Funcleson personality.
+
+Core goals:
+- useful during actual brew days
+- works well on iPhone
+- supports home-screen install behavior
+- uses Firebase Auth + Firestore for persistence when hosted
+- still has a usable local-only mode for development/testing
+- deploys by drag/drop to Netlify as a static site
+
+## Brand / style direction
+
+The brewery identity comes from Funcleson Brew Works on Untappd and reads as:
+- playful
+- flavor-first
+- pastry-stout / fruited-chaos / orange-cream experimental
+- not clean industrial craft brewery
+- not generic SaaS brewing software
+- not gothic wizard dashboard
+- more like **warm dessert-lab / bottle-share mythology / collectible-card brewing bench**
+
+Visual direction to preserve:
+- warm dark background, but lighter and friendlier than the original purple-heavy dark dashboard
+- stout / maple / cream / citrus / berry accents
+- rounded cards
+- polished, modern layout
+- compact information density
+- still clearly “Funcleson,” not generic software
+
+Tone to preserve:
+- practical and useful during brew day
+- still has Funcleson personality
+- should feel like a real brewer made it, not just a designer
+
+## Project evolution so far
+
+### Phase 1
+Original long single-page brewing companion.
+Included:
+- fermentation tracker
+- recipe vault
+- calculators
+- AI brew consultant
+- lore page
+
+Problems:
+- browser-breaking smart quotes
+- sandbox-only storage assumptions
+- unsafe/practicality issues around client-side AI API usage
+- too much long-scroll UI
+- style was too mystical/dark compared with the real brewery vibe
+
+### Phase 2
+Temporarily converted into a public-facing brewery showcase.
+It looked better visually but moved away from actual brew-day utility.
+
+### Phase 3
+Rebuilt into a brew-day assistant with:
+- current batch area
+- timers
+- checklist
+- calculators
+- recipe bench
+- notes
+
+### Phase 4
+Split into tabs rather than one continuous long screen.
+This introduced clearer workflow separation.
+
+### Phase 5+
+Several mobile, workflow, persistence, and maintainability passes were completed.
+The app was gradually reshaped around real BIAB brew-day use.
+
+## Current user workflow assumptions
+
+The user’s real workflow is now:
+1. create a recipe
+2. save the recipe template
+3. load the recipe into the app on brew day
+4. use Brew tab and Timers during the live session
+5. leave notes / gravity / checklist updates during the day
+6. package/store later
+7. archive finished batches
+
+This means:
+- recipe loading and recipe reuse are critical
+- Brew should be based on a loaded recipe/batch, not a blank batch-first workflow
+- archive loop-back and rebrew behavior are high-value
+
+## Important architectural change
+
+The project was intentionally split out of single-file mode because the old giant file had the classic single-file failure mode:
+- deleting a DOM node but forgetting a renderer still targets it
+- changing one ID and silently breaking a different tab
+- mixing styling, UI rendering, and brewing math in one place
+- one syntax issue breaking the whole app
+
+### Current file roles
+
+#### `index.html`
+Contains layout and containers.
+Should stay relatively clean.
+
+#### `styles.css`
+Contains styling and responsive behavior.
+
+#### `app.js`
+Contains state, rendering, event wiring, persistence, workflow logic, tab behavior, and BrewMate behavior.
+
+#### `brew-logic.js`
+Contains brewing formulas and reusable brewing math.
+Keep brewing calculations here instead of embedding formulas throughout UI code.
+
+## Current tab order / intended workflow
+
+The current intended tab order is:
+1. Dash
+2. Recipes
+3. Brew
+4. Timers
+5. Storage
+6. Archive
+7. Calcs
+8. BrewMate
+
+That order was explicitly changed to better match actual brewing workflow.
+Do not casually revert it.
+
+## Current tab intent
+
+### Dash
+Dashboard should be about the **active brew only**, not vanity/archive metrics.
+Surface live-useful data only:
+- next move
+- active timers
+- current batch pulse
+- what needs attention now
+- gravity snapshot
+- finish/archive readiness
+
+### Recipes
+Recipes are central.
+The user cares a lot about saved recipes as durable value.
+
+Recipes should support:
+- creating recipe templates
+- saving recipes
+- selecting a recipe
+- loading a recipe into the active batch
+- BIAB-first planning inputs
+
+Important recipe changes already made:
+- mash-guidelines-style content was removed because this app is now BIAB-focused
+- BIAB water planning was moved into the recipe workflow
+- duplicate strike temperature calculators were consolidated because mismatched math was eroding trust
+
+### Brew
+This is the operational tab once a brew is underway.
+It should contain:
+- loaded batch summary
+- running batch notes
+- beer-only brew-day checklist
+- BIAB brew plan
+- gravity logging
+- quick operational actions
+
+Important:
+- the brew-day checklist should be **beer only**, not mead
+- the BIAB brew plan in Brew was reformatted into **clean rows**, not one long unreadable sentence
+- recipe BIAB defaults now push forward into Brew so the workflow is continuous
+
+### Timers
+Timers are high-value and should feel fast.
+
+Preferred emphasis:
+- active timer dock
+- live boil snapshot
+- current bench snapshot
+- timer cards and schedule controls below
+
+Important timer bug already fixed:
+- timer preset fields were previously being overwritten while typing because live render cycles kept stomping on the input
+- current behavior should allow editing preset values normally while focused, with updates applied on blur/change/Enter
+- do not accidentally reintroduce the “can’t edit timer numbers” bug
+
+### Storage
+Previously called Packaging / Pack.
+It should stay practical, not bloated.
+Useful helpers include:
+- bottle count helper
+- keg / carbonation helper
+- packaging/storage summary
+- clear transition toward archiving
+
+### Archive
+Archive is for finished brew sessions.
+Still should support loop-back actions such as:
+- reload into Brew
+- rebrew / reuse as recipe basis
+- search / filter
+
+Future nice-to-haves:
+- tasting notes
+- rating
+- “would brew again”
+- tags/style families
+
+### Calcs
+Calcs should now contain brewing helpers only.
+
+Important:
+- the old AI helper was removed from Calcs
+- do not reintroduce it there
+- BrewMate owns the guided creative/educational support role now
+
+### BrewMate
+This is the newest major feature and should be treated as important, not disposable.
+
+BrewMate is **not** supposed to be a fake chatbot.
+It is a structured **creative brewing mentor** / concept lab.
+
+Its current purpose:
+- brainstorm beer concepts
+- mentor through style/flavor/adjunct thinking
+- teach what goes with what and why
+- identify likely conflicts / clutter / muddy design choices
+- help the user design a concept first, then turn it into a recipe draft
+
+BrewMate currently includes concept inputs like:
+- beer idea name
+- style / anchor beer
+- inspiration / vibe
+- drinking experience
+- batch size
+- target ABV / IBU
+- bitterness frame
+- body
+- finish
+- yeast expression
+- drinkability target
+- experimental level
+- learning focus
+- must-have flavors
+- avoid / keep out
+- adjuncts / signature ingredients
+- constraints / concerns
+
+BrewMate currently outputs boards/cards such as:
+- pairings that support this beer
+- ingredient coach
+- concept north star
+- recipe architecture
+- conflict check
+- why this works
+
+Important BrewMate workflow buttons/features already added:
+- pull selected recipe
+- pull live batch
+- send starter draft to Recipes
+- copy deep-dive prompt
+- open ChatGPT
+- clear inputs
+
+Important BrewMate intent:
+- it should feel like a brewer’s brainstorming mentor
+- it should teach pairings, structure, balance, and tradeoffs
+- it should help decide on flavor profile / style / adjunct logic before recipe drafting
+- it should remain usable offline / locally, not depend on a live backend AI service
+
+Knowledge intent for BrewMate:
+- it should be grounded in real brewing/style/sensory/ingredient logic
+- inspiration should reflect tried-and-true brewing knowledge and culinary pairing sense
+- however, it is still a local rules/heuristics engine, not a live all-knowing model
+- avoid pretending it contains every expert opinion; instead keep it practical, disciplined, and useful
+
+## BrewMate layout lessons learned
+
+Multiple layout passes happened here, and some fixes initially failed because CSS targeted classes that were not present in the live HTML.
+
+Current direction:
+- BrewMate desktop layout should feel balanced, not giant left-side dead space and not right-side heavy
+- a previous attempt created a too-narrow right-side mini-grid that caused ugly vertical word wrapping
+- the latest fix moved back to a roomier layout while keeping the page more balanced
+- the clear-inputs function is now present and should remain
+- the Knowledge Spine section was removed and should stay removed unless the user explicitly asks for it back
+
+If BrewMate is edited in the future:
+- make sure any new layout classes are actually applied in the markup
+- watch for overly narrow cards causing vertical wrapping
+- keep desktop balance and mobile readability in mind
+
+## Header / footer / chrome decisions already made
+
+These should not be casually undone.
+
+### Header cleanup
+Current direction:
+- Brew Clock top left
+- sync / local/cloud indicator top right
+- centered title beneath: **Funcleson Brew Works Brew Day Builder**
+- remove older “warm weird practical …” wording
+- minimize clutter
+
+### Footer utilities
+Important account/data actions were moved out of the header.
+The sign out / export / import controls were moved toward the footer / lower-visibility utility position so the app surface stays cleaner.
+
+### Mobile navigation
+- iPhone behavior matters a lot
+- oversized sticky top controls were explicitly disliked
+- bottom tab navigation on phone is preferred
+- compact-by-default presentation is preferred
+
+### Compact-by-default presentation
+The user strongly preferred the app once extra copy was stripped out.
+Future edits should preserve:
+- denser cards
+- less explanatory filler
+- cleaner screens
+- fewer persistent UI distractions
+
+## Firebase / Netlify / local mode details
+
+### Hosted/cloud mode
+- Firebase Auth + Firestore are used for hosted persistence
+- the Firebase project is `funcleapp`
+- the Netlify domain `funcleapp.netlify.app` was already authorized in Firebase Auth
+- hosted auth/cloud behavior should be tested on a real hosted domain or otherwise properly authorized origin
+
+Associated Firebase config:
+```js
+const firebaseConfig = {
+  apiKey: "AIzaSyCE1MfVVCA5t2f74T3FIORuXoEuj8ZpL6U",
+  authDomain: "funcleapp.firebaseapp.com",
+  projectId: "funcleapp",
+  storageBucket: "funcleapp.firebasestorage.app",
+  messagingSenderId: "207986521450",
+  appId: "1:207986521450:web:f0c516aef3a40eabd1e113",
+  measurementId: "G-8LZZLNNDNR"
+};
+```
+
+### Local testing mode
+This is very important.
+The user does **not** want to waste Netlify deploys just to test layout/UI.
+
+Local-only mode should remain first-class for:
+- UI testing
+- recipe flow testing
+- timer testing
+- archive testing
+- BrewMate testing
+- import/export testing
+- local storage behavior
+
+Local mode should still boot cleanly even when Firebase/auth are unavailable.
+Do not break this.
+
+### Deploy structure for Netlify
+The app is now deployed as a small static site folder, not a single HTML file.
+
+Expected root-level files for deploy:
+- `index.html`
+- `styles.css`
+- `app.js`
+- `brew-logic.js`
+- icon PNG files
+
+Icons are expected at the root because the HTML references:
+- `/icon-180.png`
+- `/icon-192.png`
+- `/icon-512.png`
+
+If the user places icons in a subfolder, the HTML paths must be updated accordingly.
+
+## Persistence / backup guidance
+
+This remains important.
+The user is specifically concerned about losing saved recipes.
+
+Current persistence reality:
+- local browser storage is in use
+- Firestore sync is intended when signed in and hosted
+- JSON export/import exists and should remain
+
+Product guidance:
+- JSON should remain the primary backup/export format because it is safest for restore/re-import
+- CSV/Excel-friendly recipe export can be a future secondary feature, but should not replace JSON backup
+
+## Known bugs/issues already addressed
+
+These should not be reintroduced:
+- local-only button existing but app still failing to boot because Firebase/module boot order blocked it
+- render functions crashing because they targeted removed DOM nodes
+- dashboard render paths referencing deleted dashboard containers
+- schedule/timer render paths targeting missing containers
+- duplicate strike temperature logic giving different answers
+- timer preset inputs being overwritten while typing
+- BrewMate layout CSS targeting classes that were not actually present in the HTML
+- BrewMate right-side cards becoming too narrow and wrapping text vertically in an ugly way
+
+## Current practical priorities
+
+If a future agent has to choose without asking, prioritize in this order:
+1. do not break recipe save/load behavior
+2. do not break local-only mode
+3. preserve BIAB workflow integrity
+4. preserve timer usability
+5. keep mobile usability first, especially on iPhone
+6. keep BrewMate useful but not bloated/fake-chatty
+7. preserve warm compact visual polish
+
+## Good future improvements still worth considering
+
+These are optional and should not be forced if they risk stability.
+
+### 1. Better archive loop-back
+- reload archived batch into Brew more elegantly
+- rebrew with edits
+- tasting notes / rating / would-brew-again flags
+- tags or style families
+
+### 2. Better recipe durability / backup UX
+- lightweight “last exported” reminder
+- recipe-only export in addition to full JSON backup
+- clearer backup reassurance without adding clutter
+
+### 3. Better timer / schedule speed
+- sort additions by time left
+- stronger due-now emphasis
+- faster quick adjustments
+- more hands-wet-friendly interactions
+
+### 4. Better storage helpers
+- clearer bottle/keg workflows
+- packaging readiness summary
+- smooth archive confirmation state
+
+### 5. BrewMate refinement
+- improve flavor pairing knowledge density
+- better culinary cross-pollination for adjunct-driven beers
+- smarter starter recipe drafting
+- tighter integration from BrewMate concept to Recipe Builder
+- possible future ingredient knowledge cards with “what it does / when to add / what it pairs with / common mistakes”
+
+## Constraints
+
+Keep these unless there is a compelling reason not to:
+- static vanilla HTML/CSS/JS
+- no npm/build tools required
+- no framework migration unless the user explicitly wants it
+- Netlify static deployment target
+- Firebase Auth + Firestore for hosted persistence
+- local-only mode for offline/dev convenience
+- no unsafe client-side AI API integration
+- use browser-safe localStorage
+- preserve the warm Funcleson identity
+- keep this a **brew-day assistant first**, not a brochure site
+
+## Preferred output from a future agent
+
+If continuing the project, do all of the following:
+1. inspect the current actual files, not just this handoff
+2. identify the weakest UX/stability areas before changing things
+3. propose the next best improvements in priority order
+4. implement directly in code
+5. return revised full drop-in files or a deployable zip
+6. avoid reintroducing local-mode or DOM-target bugs
+
+## Design intent summary
+
+Target vibe:
+**“Funcleson brew-day cockpit: warm, weird, practical, polished, compact, and actually useful.”**
+
+Not:
+- generic brewery brochure
+- generic software dashboard
+- gothic fantasy app
+- cluttered long-scroll note dump
+- fake omniscient AI chatbot
+- over-explained UI with too much persistent chrome
+
+## Final note for the next agent
+
+Do not start over.
+This project is much closer to complete than concept stage.
+
+The biggest risk now is not lack of features.
+The biggest risk is accidentally breaking:
+- recipe persistence
+- local-only mode
+- timer behavior
+- BIAB workflow continuity
+- BrewMate usability/layout
+
+Stability and polish matter more than a pile of new features.
