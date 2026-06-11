@@ -1,10 +1,5 @@
 #!/bin/sh
 
-branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
-
-if [ "$branch" = "main" ]; then
-  echo "Direct commits to main are blocked. Switch to dev or another working branch first." >&2
-  exit 1
-fi
-
+# Main-only workflow: leave this hook in place as a repo-local entry point for
+# future lightweight checks without blocking commits on the live branch.
 exit 0

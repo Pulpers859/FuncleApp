@@ -6,8 +6,8 @@
   - keep behavior stable
   - make future edits faster and safer
   - centralize repeated recipe/batch/timer handoff logic
-  - keep brewing math in brew-logic.js so UI edits stay isolated
-  - add clear section markers so single-file-style drift does not return inside app.js
+  - keep brewing math in scripts/brew-logic.js so UI edits stay isolated
+  - add clear section markers so single-file-style drift does not return inside scripts/app.js
 */
 
     /* =========================================================

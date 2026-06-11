@@ -13,8 +13,8 @@
 ## Repo State
 
 - Stable branch: `main`
-- Working branch: `dev`
-- Expected default branch for normal work: `dev`
+- Working branch: `main`
+- Expected default branch for normal work: `main`
 - Sync-first rule: `Before normal work, fetch from the remote first. If the working tree is clean and the active branch tracks the expected upstream, pull with --ff-only before editing. If local changes exist, fetch and reconcile instead of blindly pulling.`
 - If Git is not set up yet for this project, the agent should bootstrap it before doing major feature work.
 
@@ -40,9 +40,7 @@ If `git rev-parse --is-inside-work-tree` fails in the real project root, the age
 9. Run a secret scan and remove any live credentials from tracked files before connecting or pushing GitHub.
 10. Connect the GitHub remote if needed.
 11. Push `main`.
-12. Create and push `dev`.
-13. Ensure the tracked hook blocks direct commits to `main`.
-14. Create a dedicated PowerShell shortcut for this project if the user wants one.
+12. Create a dedicated PowerShell shortcut for this project if the user wants one.
 
 If the GitHub remote is unknown, the agent should finish local bootstrap first and only ask for the remote when push/setup is actually needed.
 
@@ -68,7 +66,7 @@ If the GitHub remote is unknown, the agent should finish local bootstrap first a
 - Tell the user clearly what is evidence-backed, proven, inferred, or heuristic.
 - Do not silently tolerate poor architecture if it is now a maintenance risk.
 - Handle Git operations when appropriate.
-- Keep normal work on `dev`, not `main`.
+- Keep normal work on `main` unless the user explicitly asks for a temporary branch-based workflow.
 - Before editing on an existing repo, run a fetch and check ahead/behind state; if clean, pull the tracked branch with `--ff-only`.
 - Audit adjacent risks after making fixes.
 - Run the checks that are realistically available in the current environment.
@@ -123,16 +121,17 @@ The agent should confirm:
 - Main product purpose: `A warm, practical, mobile-friendly brew-day cockpit for recipe planning, live brew execution, timers, packaging, archive history, and BrewMate concept mentoring.`
 - Key modules or directories:
   - `index.html`
-  - `styles.css`
-  - `app.js`
-  - `brew-logic.js`
+  - `styles/styles.css`
+  - `scripts/app.js`
+  - `scripts/brew-logic.js`
+  - `assets/icons/`
   - `docs/`
 - Known fragile areas:
-  - `app.js` is still a large single runtime file even though the app is no longer a one-file HTML build.
+  - `scripts/app.js` is still a large single runtime file even though the app is no longer a one-file HTML build.
   - Local-only boot and hosted Firebase boot must both keep working.
   - Timer preset inputs must remain editable without render loops overwriting focused input values.
   - Recipe persistence, archive loop-back, and BrewMate-to-Recipe flow are high-value paths.
-  - Root icon paths are part of the current static deploy assumptions.
+  - Static asset paths must stay relative so local file testing and hosted deployment both keep working.
 - Important evidence/product constraints:
   - Preserve recipe save/load behavior.
   - Preserve BIAB-first workflow continuity.
@@ -155,12 +154,11 @@ The agent should confirm:
   - `git add .`
   - `git commit -m "..."`
   - `git push`
-- Preferred promotion flow from `dev` to `main`:
+- Preferred normal sync flow on `main`:
   - `git checkout main`
   - `git pull --ff-only`
-  - `git merge --ff-only dev`
+  - `git st`
   - `git push`
-  - `git checkout dev`
 
 ## Project-Specific Instructions For The Next Agent
 
@@ -169,7 +167,7 @@ Project: FuncleApp
 Active repo path: C:\Dev\FuncleApp
 GitHub remote: https://github.com/Pulpers859/FuncleApp.git
 Stable branch: main
-Working branch: dev
+Working branch: main
 
 Important:
 - Treat C:\Dev\FuncleApp as the source of truth.
@@ -177,7 +175,8 @@ Important:
 - If Git is not already set up, bootstrap it using the repo standard in this file before major feature work.
 - Use the standard workflow: investigate directly, fix root causes, audit adjacent risks, run checks, and handle Git when appropriate.
 - Before starting normal work, fetch from origin and sync the active branch first when the working tree is clean. If the repo is dirty, fetch and reconcile instead of pulling blindly.
+- This repo currently uses a main-only workflow rather than a persistent dev branch.
 - The app intentionally stays static and deployable without a build system.
-- Keep the deploy root simple: index.html, styles.css, app.js, brew-logic.js, and icon files remain the critical site files.
+- Keep the deploy root simple: index.html stays at the root while runtime assets live under styles/, scripts/, and assets/icons/.
 - If multiple surfaces emerge later, prioritize the brew-day app workflow before side tooling.
 ```

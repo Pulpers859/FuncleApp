@@ -1,3 +1,6 @@
+ARCHIVAL NOTE:
+This handoff is preserved for historical context. The current live repo structure now uses `scripts/`, `styles/`, and `assets/icons/` under `C:\Dev\FuncleApp`.
+
 You are taking over a web app project called **FuncleApp Brewday Assistant** for **Funcleson Brew Works**.
 
 Your job is to continue from the current working state without restarting from scratch.

@@ -10,27 +10,27 @@ FuncleApp is a static vanilla HTML/CSS/JS brew-day assistant for Funcleson Brew 
 - Hosted persistence: Firebase Auth + Firestore
 - Local fallback: browser `localStorage`
 
-## Top-Level App Files
+## Runtime Structure
 
-- `index.html`: app layout, tabs, containers, and script/style wiring
-- `styles.css`: visual system, responsive behavior, and component styling
-- `app.js`: app state, rendering, persistence, workflow logic, timers, archive flow, and BrewMate behavior
-- `brew-logic.js`: reusable brewing math and estimators
-- `icon-180.png`, `icon-192.png`, `icon-512.png`: installable web app icons
+- `index.html`: deploy entry point, layout, tabs, and runtime wiring
+- `styles/styles.css`: visual system, responsive behavior, and component styling
+- `scripts/app.js`: app state, rendering, persistence, workflow logic, timers, archive flow, and BrewMate behavior
+- `scripts/brew-logic.js`: reusable brewing math and estimators
+- `assets/icons/`: installable web app icons
 
-## Repo Support Files
+## Support Files
 
 - `PROJECT_HANDOFF.md`: project-specific operating instructions for the next agent
-- `.githooks/pre-commit`: blocks direct commits to `main`
-- `docs/legacy/FuncleApp_Brewday_Handoff_Updated_v2.txt`: preserved earlier handoff/context notes
+- `.githooks/pre-commit`: repo-local hook entry point for future lightweight checks
+- `docs/legacy/FuncleApp_Brewday_Handoff_Updated_v2.txt`: preserved earlier handoff/context notes kept as archival reference
 
 ## Working Rules
 
-- Keep the static deploy files at the repo root unless there is a deliberate deploy-path change.
+- Keep `index.html` at the deploy root unless there is a deliberate hosting change.
 - Preserve local-only boot behavior even if Firebase is unavailable.
 - Do not break recipe save/load, timer editing, BIAB workflow continuity, or archive loop-back behavior.
-- Keep brewing formulas in `brew-logic.js` rather than scattering them through UI code.
-- Prefer normal feature work on `dev`, not `main`.
+- Keep brewing formulas in `scripts/brew-logic.js` rather than scattering them through UI code.
+- Use `main` as the live working branch for this repo unless a future task explicitly introduces a short-lived side branch.
 
 ## Local Use
 
@@ -38,6 +38,5 @@ You can test the app by opening `index.html` directly in a browser, though hoste
 
 ## Deployment Notes
 
-- Current HTML references icons at the site root.
 - The app is intentionally framework-free and requires no npm or build step.
 - JSON export/import should remain the primary backup/restore path for recipes and brew records.
